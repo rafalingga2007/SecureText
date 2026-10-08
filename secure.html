@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SecureText - Caesar Cipher</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<main class="container">
+  <header>
+    <h1>SecureText</h1>
+    <p class="subjudul">Enkripsi dan dekripsi pesan dengan Caesar Cipher menggunakan aritmetika modular</p>
+  </header>
+
+  <!-- ===== PANDUAN ===== -->
+  <section class="panel">
+    <h2>1. Panduan Cepat</h2>
+    <ol class="daftar-langkah">
+      <li><strong>Tulis pesan</strong> pada kolom "Pesan teks". Boleh memakai huruf besar, huruf kecil, spasi, dan angka.</li>
+      <li><strong>Isi kunci</strong> berupa bilangan bulat. Kunci menentukan seberapa jauh setiap huruf digeser.</li>
+      <li><strong>Tekan tombol proses.</strong> Program menampilkan ciphertext (pesan tersandi) dan hasil dekripsinya.</li>
+      <li><strong>Ikuti pemandu langkah</strong> untuk melihat perhitungan setiap huruf secara bertahap.</li>
+      <li><strong>Periksa hasil.</strong> Jika dekripsi sama dengan pesan awal, proses berhasil.</li>
+    </ol>
+
+    <details>
+      <summary>Apa itu Caesar Cipher?</summary>
+      <p>
+        Caesar Cipher adalah metode kriptografi klasik yang menyandikan pesan dengan cara menggeser
+        setiap huruf dalam alfabet sejauh jumlah tertentu. Misalnya, dengan kunci 3, huruf A berubah
+        menjadi D, B menjadi E, dan seterusnya. Huruf yang melewati Z kembali ke A dari awal.
+      </p>
+      <p>
+        Metode ini mudah dipahami dan sangat baik untuk belajar konsep aritmetika modular. Namun,
+        metode ini mudah dipecahkan sehingga tidak cocok untuk mengamankan data yang sebenarnya.
+      </p>
+    </details>
+
+    <details open>
+      <summary>Rumus yang digunakan</summary>
+      <div class="rumus">
+        <p><strong>Enkripsi:</strong> <code>C = (P + k) mod 26</code></p>
+        <p><strong>Dekripsi:</strong> <code>P = (C − k) mod 26</code></p>
+      </div>
+      <ul class="daftar-penjelasan">
+        <li><strong>P</strong> adalah posisi huruf pesan asli (plaintext), dengan A = 0, B = 1, ..., Z = 25.</li>
+        <li><strong>C</strong> adalah posisi huruf hasil sandi (ciphertext).</li>
+        <li><strong>k</strong> adalah kunci, yaitu bilangan bulat yang dimasukkan pengguna.</li>
+        <li><strong>mod 26</strong> adalah sisa bagi terhadap 26. Operasi ini membuat hasil selalu berada di rentang 0 sampai 25, sehingga huruf tidak keluar dari alfabet.</li>
+      </ul>
+      <p class="catatan">
+        Contoh: P = 'H' (posisi 7) dan k = 3. Maka C = (7 + 3) mod 26 = 10, yaitu huruf 'K'.
+      </p>
+    </details>
+
+    <details>
+      <summary>Tabel posisi huruf (A = 0 sampai Z = 25)</summary>
+      <div id="tabelAlfabet" class="alfabet-grid"></div>
+    </details>
+  </section>
+
+  <!-- ===== FORM ===== -->
+  <section class="panel">
+    <h2>2. Masukkan Pesan dan Kunci</h2>
+
+    <div class="contoh-wrap">
+      <span class="label">Contoh cepat:</span>
+      <div class="contoh-btns">
+        <button type="button" class="btn-contoh" data-teks="HALO" data-kunci="3">HALO, k = 3</button>
+        <button type="button" class="btn-contoh" data-teks="Halo Dunia" data-kunci="3">Halo Dunia, k = 3</button>
+        <button type="button" class="btn-contoh" data-teks="XYZ" data-kunci="3">XYZ, k = 3</button>
+        <button type="button" class="btn-contoh" data-teks="Pesan #1: aman!" data-kunci="-5">Pesan #1, k = -5</button>
+      </div>
+    </div>
+
+    <form id="formCipher" novalidate>
+      <div class="form-group">
+        <label for="inputTeks">Pesan teks (plaintext)</label>
+        <textarea id="inputTeks" rows="3" placeholder="Contoh: Halo Dunia"></textarea>
+        <small>Huruf A–Z akan dienkripsi. Angka, spasi, dan tanda baca tidak berubah.</small>
+      </div>
+
+      <div class="form-group">
+        <label for="inputKunci">Kunci (bilangan bulat)</label>
+        <input type="text" id="inputKunci" value="3" inputmode="numeric" autocomplete="off">
+        <small>Boleh negatif atau lebih dari 26. Kunci 29 sama dengan kunci 3, dan kunci −3 sama dengan kunci 23.</small>
+      </div>
+
+      <button type="submit" class="btn-utama">Proses Enkripsi &amp; Dekripsi</button>
+      <p id="pesanError" class="error" hidden></p>
+    </form>
+  </section>
+
+  <!-- ===== HASIL ===== -->
+  <section id="hasil" class="panel hasil" hidden aria-live="polite">
+    <h2>3. Hasil</h2>
+
+    <div class="hasil-item">
+      <span class="label">Ciphertext (hasil enkripsi)</span>
+      <output id="outputCipher"></output>
+      <div class="baris-aksi">
+        <button type="button" id="btnSalin" class="btn-kecil">Salin ciphertext</button>
+        <span id="pesanSalin" class="info"></span>
+      </div>
+    </div>
+
+    <div class="hasil-item">
+      <span class="label">Plaintext hasil dekripsi</span>
+      <output id="outputPlain"></output>
+    </div>
+
+    <p id="statusDekripsi" class="status"></p>
+    <p id="infoKunci" class="info"></p>
+  </section>
+
+  <!-- ===== PEMANDU LANGKAH ===== -->
+  <section id="pemandu" class="panel" hidden>
+    <h2>4. Pemandu Langkah demi Langkah</h2>
+    <p class="info">
+      Tekan <strong>Berikutnya</strong> untuk melihat satu langkah pada satu waktu. Pada baris alfabet,
+      <span class="penanda asal">biru</span> menandai posisi awal dan
+      <span class="penanda tujuan">hijau</span> menandai posisi hasil.
+    </p>
+
+    <div class="progress"><div id="progressBar"></div></div>
+    <p id="posisiLangkah" class="info"></p>
+
+    <div class="kartu-langkah">
+      <span id="faseLangkah" class="badge"></span>
+      <h3 id="judulLangkah"></h3>
+      <ol id="penjelasanLangkah" class="penjelasan"></ol>
+
+      <div id="stripAlfabet" class="strip"></div>
+      <p id="keteranganStrip" class="info"></p>
+    </div>
+
+    <div class="nav">
+      <button type="button" id="btnSebelum" class="btn-sekunder">← Sebelumnya</button>
+      <button type="button" id="btnBerikut" class="btn-utama">Berikutnya →</button>
+    </div>
+    <button type="button" id="btnUlang" class="btn-link">Mulai dari langkah pertama</button>
+
+    <details>
+      <summary>Tabel rincian enkripsi: (P + k) mod 26</summary>
+      <div class="tabel-wrap">
+        <table>
+          <thead>
+            <tr><th>No</th><th>Huruf</th><th>P</th><th>P + k</th><th>mod 26</th><th>C</th></tr>
+          </thead>
+          <tbody id="tbodyEnkripsi"></tbody>
+        </table>
+      </div>
+    </details>
+
+    <details>
+      <summary>Tabel rincian dekripsi: (C − k) mod 26</summary>
+      <div class="tabel-wrap">
+        <table>
+          <thead>
+            <tr><th>No</th><th>Huruf</th><th>C</th><th>C − k</th><th>mod 26</th><th>P</th></tr>
+          </thead>
+          <tbody id="tbodyDekripsi"></tbody>
+        </table>
+      </div>
+    </details>
+  </section>
+
+  <!-- ===== PENGUJIAN ===== -->
+  <section class="panel">
+    <h2>5. Pengujian</h2>
+    <p class="info">
+      Menjalankan kasus uji bawaan. Setiap kasus memeriksa ciphertext yang dihasilkan dan apakah dekripsinya kembali ke pesan awal.
+    </p>
+    <button type="button" id="btnUji" class="btn-sekunder">Jalankan Kasus Uji</button>
+    <p id="ringkasanUji" class="status"></p>
+    <div class="tabel-wrap">
+      <table>
+        <thead>
+          <tr><th>No</th><th>Input / Kasus</th><th>Kunci</th><th>Expected</th><th>Actual</th><th>Status</th></tr>
+        </thead>
+        <tbody id="tbodyUji"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===== FAQ ===== -->
+  <section class="panel">
+    <h2>6. Pertanyaan yang Sering Diajukan</h2>
+    <details>
+      <summary>Mengapa huruf besar dan kecil tetap berbeda setelah diproses?</summary>
+      <p>Program menghitung huruf besar dengan basis kode 65 (A) dan huruf kecil dengan basis 97 (a). Jadi 'h' tetap menjadi huruf kecil setelah dienkripsi, dan 'H' tetap huruf besar.</p>
+    </details>
+    <details>
+      <summary>Apa yang terjadi jika kunci negatif?</summary>
+      <p>Kunci negatif dinormalisasi dengan rumus ((k mod 26) + 26) mod 26. Contohnya, kunci −3 sama dengan kunci 23. Dengan begitu, hasil tetap berada dalam alfabet.</p>
+    </details>
+    <details>
+      <summary>Mengapa angka dan simbol tidak diubah?</summary>
+      <p>Caesar Cipher hanya didefinisikan untuk 26 huruf alfabet. Karakter lain dibiarkan agar struktur kalimat tetap terbaca.</p>
+    </details>
+    <details>
+      <summary>Bisakah dekripsi dilakukan tanpa kunci?</summary>
+      <p>Secara teori bisa dengan brute force, yaitu mencoba semua 25 kunci yang mungkin. Karena jumlah kunci sangat sedikit, metode ini mudah dilakukan. Itulah salah satu kelemahan utama Caesar Cipher.</p>
+    </details>
+  </section>
+</main>
+
+<script src="cipher.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
